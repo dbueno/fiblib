@@ -1,0 +1,14 @@
+
+* Clean up interface
+** fibheap_insert stays the way it is, returning a new fibnode
+** TODO (fibheap_insert_node): New; take a fibnode and insert it
+** TODO fibheap_extract_min should return the fibnode
+** DONE add fibnode_data accessor for the fibnode
+   CLOSED: [2007-05-30 Wed 21:24]
+** DONE add fibnode_key accessor
+   CLOSED: [2007-05-30 Wed 21:24]
+
+* DONE come up with a license
+  CLOSED: [2007-05-30 Wed 21:21]
+
+* TODO test fibheap_decrease_key
