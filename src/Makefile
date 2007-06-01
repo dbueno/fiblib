@@ -1,4 +1,4 @@
-# fiblib Makefile.
+# fiblib Makefile
 # Copyright (c) 2007 by Denis Bueno.
 
 # OUnit is required if you would like to run the unit tests.
