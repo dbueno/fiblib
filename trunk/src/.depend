@@ -1,0 +1,4 @@
+fibHeap.cmo: fibHeap.cmi 
+fibHeap.cmx: fibHeap.cmi 
+fibHeap_test.cmo: fibHeap.cmi 
+fibHeap_test.cmx: fibHeap.cmx 
