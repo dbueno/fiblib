@@ -3,3 +3,6 @@
 = Introduction =
 
 There are no downloads yet. Have patience.
+
+== Dependencies ==
+fiblib currently depends on OUnit, but only if you want to build and run the unit tests.
