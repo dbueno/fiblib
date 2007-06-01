@@ -303,6 +303,11 @@ let tests = TestList
     done;
 );
 
+"decrease key",
+(fun {small_heap=heap} ->
+  ()
+);
+
 ]);;
 
 
