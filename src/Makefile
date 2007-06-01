@@ -1,3 +1,8 @@
+# fiblib Makefile.
+# Copyright (c) 2007 by Denis Bueno.
+
+# OUnit is required if you would like to run the unit tests.
+
 OCAMLMAKEFILE := ./OCamlMakefile
 
 # Find otags.
@@ -5,8 +10,6 @@ OTAGS := $(shell which otags 2> /dev/null)
 
 export OCAMLFLAGS += -w Aeszy -dtypes
 export OCAMLDOCFLAGS += -keep-code -sort
-
-PACKS ?= oUnit
 
 SOURCES ?= \
   fibHeap.mli fibHeap.ml \
@@ -40,7 +43,7 @@ TAGS: $(RESULT).cma
 
 
 test_fibheap: all
-	$(MAKE) dc RESULT="test_fibheap" SOURCES="$(SOURCES) fibHeap_test.ml"
+	$(MAKE) dc RESULT="test_fibheap" PACKS="oUnit" SOURCES="$(SOURCES) fibHeap_test.ml"
 
 clean::
 	rm -f *_test
