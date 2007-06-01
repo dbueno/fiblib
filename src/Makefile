@@ -6,7 +6,7 @@ OTAGS := $(shell which otags 2> /dev/null)
 export OCAMLFLAGS += -w Aeszy -dtypes
 export OCAMLDOCFLAGS += -keep-code -sort
 
-PACKS ?= extlib str unix num oUnit
+PACKS ?= oUnit
 
 SOURCES ?= \
   fibHeap.mli fibHeap.ml \

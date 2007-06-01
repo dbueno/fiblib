@@ -15,6 +15,18 @@ let swap x y =
     x := !y;
     y := temp;;
 
+module Option = struct
+  exception No_value;;
+  let get opt =
+    match opt with
+    | Some x -> x
+    | None -> raise No_value;;
+  let is_some opt =
+    match opt with
+    | Some _ -> true
+    | _ -> false;;
+end;;
+
 
 
 (** The signature of the output of {!Make}. *)
