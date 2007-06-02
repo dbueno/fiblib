@@ -5,4 +5,4 @@
 Fiblib is an efficient, imperative Fibonacci heap library, based on the pseudocode of Cormen, Leiserson, Rivest, and Stein. It aims to be practical and elegant.
 
 == Dependencies ==
-fiblib currently depends on [http://www.xs4all.nl/~mmzeeman/ocaml/ OUnit], but only if you want to build and run the unit tests.
+Fiblib currently depends on [http://www.xs4all.nl/~mmzeeman/ocaml/ OUnit], but only if you want to build and run the unit tests.
