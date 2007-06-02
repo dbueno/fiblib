@@ -29,10 +29,15 @@ LIBINSTALL_FILES = $(MLIS) $(CMIS) $(wildcard *.cma) $(wildcard *.cmxa) $(RESULT
 
 
 
-all: debug-code-library
+all: debug-code-library native-code-library
 ifneq (,$(OTAGS))
 	$(MAKE) TAGS
 endif
+
+.PHONY: dist
+dist: all
+	(cd ../ && ./dist.sh)
+	@echo "Distribution tar is in the toplevel directory."
 
 
 # Regenerate tags if the $(RESULT) has changed.
