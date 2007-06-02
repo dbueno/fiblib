@@ -1,4 +1,6 @@
 
+* TODO Choose "standard" heap interface and conform to it
+
 * Clean up interface
 ** fibheap_insert stays the way it is, returning a new fibnode
 ** TODO (fibheap_insert_node): New; take a fibnode and insert it
