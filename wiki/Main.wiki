@@ -1,4 +1,4 @@
-#summary Front page.
+#summary Project summary.
 
 = Introduction =
 
