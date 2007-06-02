@@ -4,4 +4,4 @@
 
 == `decrease-key` ==
 
-  * Insert _n_ elements, decrease each key to a random value; make sure they come out in the right order.
+  * Insert _n_ elements, decrease have the keys to a random value; make sure they come out in the right order.
