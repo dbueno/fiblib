@@ -1,0 +1,7 @@
+#summary Some unit-testing ideas.
+
+= Unit Test Ideas =
+
+== `decrease-key` ==
+
+  * Insert _n_ elements, decrease each key to a random value; make sure they come out in the right order.
