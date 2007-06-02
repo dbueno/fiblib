@@ -88,6 +88,8 @@ module type S = sig
 
         @return the data whose {!key} is minimum in [heap] *)
 
+  val fibheap_delete : 'a fibheap -> 'a fibnode -> unit
+
   val fibheap_decrease_key : 'a fibheap -> 'a fibnode -> key -> unit
     (** [fibheap_decrease_key heap node new_key] decreases the value of the key
         paired with [node] in the [heap].
@@ -117,6 +119,8 @@ end
 
 module type KeyOrderType = sig
   include Map.OrderedType
+
+  val min : t
 end
 
 
@@ -356,6 +360,17 @@ module Make (Ord : KeyOrderType) = struct
 
   and fibheap_extract_min_data heap =
     (fibheap_extract_min heap).data
+
+
+
+  (**
+     ------------------------------------------------------------
+     DELETE
+     ------------------------------------------------------------
+  *)
+  and fibheap_delete heap node =
+    fibheap_decrease_key heap node Ord.min;
+    ignore (fibheap_extract_min heap);
 
   (**
     ------------------------------------------------------------

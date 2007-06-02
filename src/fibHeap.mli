@@ -80,6 +80,8 @@ module type S = sig
 
         @return the data whose {!key} is minimum in [heap] *)
 
+  val fibheap_delete : 'a fibheap -> 'a fibnode -> unit
+
   val fibheap_decrease_key : 'a fibheap -> 'a fibnode -> key -> unit
     (** [fibheap_decrease_key heap node new_key] decreases the value of the key
         paired with [node] in the [heap].
@@ -115,9 +117,12 @@ end
     You need to define:
 
     - [t], the type of your keys; and
-    - [compare : t -> t -> int], an ordering for your keys. See {!S.key} for ordering details. *)
+    - [compare : t -> t -> int], an ordering for your keys. See {!S.key} for ordering details.
+    - [min], a value such that for any value [x] of type [t], [compare min x <= 0]. *)
 module type KeyOrderType = sig
   include Map.OrderedType (* declares type t *)
+
+  val min : t
 end
 
 (** Creates a Fibonacci heap module with key comparison done by [Ord]. *)
