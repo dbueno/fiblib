@@ -15,6 +15,8 @@ let swap x y =
     x := !y;
     y := temp;;
 
+(** My own implementation of a subset of the Option module from extlib. Provided
+    here so I don't depend on extlib just for these two trivial functions. *)
 module Option = struct
   exception No_value;;
   let get opt =
@@ -42,8 +44,8 @@ module type S = sig
           max-heap. If [fibkey] is [int], for example, and is compared by
           [Pervasives.compare], you get a min-heap.
 
-          In general, if [f] compares keys, it should be that [f k k' <= 0] if
-          and only if [k] should occur higher in the heap than [k']. *)
+          In general, if [f] compares keys, it is required that that [f k k' <
+          0] if and only if [k] should occur before [k'] in extraction order. *)
 
   type 'a fibheap
       (** A fibonacci heap containing elements of type ['a]. *)
@@ -54,36 +56,54 @@ module type S = sig
   (** {3 Exceptions } *)
 
   (** Thrown when the heap is empty. *)
-  exception Empty
+  exception Empty;;
 
   exception Key_too_big
+    (** Thrown when the new key given for a call to {!fibheap_decrease_key}
+        would not result in a decreased key. *)
 
   (** {3 Operations } *)
 
   val fibheap_create : unit -> 'a fibheap
     (** Create a fibonacci heap. *)
 
-  val fibheap_insert : 'a fibheap -> 'a -> key -> 'a fibnode
-    (** [fibheap_insert heap data key] inserts [data] into [heap], and
-        associates it with key [key]. The node created by the insert operation is
-        returned. *)
+  val fibheap_insert : 'a fibheap -> 'a fibnode -> unit
+    (** [fibheap_insert heap node] inserts [node] into [heap]. *)
 
-  val fibheap_size : 'a fibheap -> int
-    (** @return the number of elements in the heap. *)
+  val fibheap_insert_data : 'a fibheap -> 'a -> key -> 'a fibnode
+    (** [fibheap_insert_data heap data key] implicitly creates a {!fibnode} and
+        inserts it into the heap.
 
-  val fibheap_extract_min : 'a fibheap -> 'a
-    (** [fibheap_extract_min heap] extracts the item with the minimum key from
-        [heap]. *)
+        @return the created {!fibnode} *)
+
+  val fibheap_extract_min : 'a fibheap -> 'a fibnode
+    (** [fibheap_extract_min heap] extracts the node with the minimum key from
+        [heap].
+
+        @return the {!fibnode} whose {!key} is minimum in [heap] *)
+
+  val fibheap_extract_min_data : 'a fibheap -> 'a
+    (** [fibheap_extract_min heap] extracts the node with the minimum key from
+        [heap].
+
+        @return the data whose {!key} is minimum in [heap] *)
 
   val fibheap_decrease_key : 'a fibheap -> 'a fibnode -> key -> unit
     (** [fibheap_decrease_key heap node new_key] decreases the value of the key
         paired with [node] in the [heap].
 
-        @raise Not_found if [node] is not in the heap *)
+        @raise Not_found if [node] is not in the heap
+        @raise Key_too_big if [node]'s key is smaller than [new_key] *)
+
+  val fibheap_size : 'a fibheap -> int
+    (** [fibheap_size heap].
+
+        @return the number of elements in [heap]. *)
 
 
-  (** {3 Accessors } *)
+  (** {3 Constructors and Accessors } *)
 
+  val fibnode_new : key:key -> data:'a -> 'a fibnode
 
   val fibnode_data : 'a fibnode -> 'a
 
@@ -97,8 +117,6 @@ end
 
 module type KeyOrderType = sig
   include Map.OrderedType
-
-  val to_string : t -> string
 end
 
 
@@ -146,7 +164,7 @@ module Make (Ord : KeyOrderType) = struct
            child of another node? *)
 
        mutable degree : int;
-       (** How many levels of kids. *)
+       (** The length of the child list. *)
 
        data : 'a;
       };;
@@ -180,6 +198,7 @@ module Make (Ord : KeyOrderType) = struct
                  degree = 0}
     in
       n;;
+  let fibnode_new ~key:key ~data:data = create_fibnode data key;;
 
   (** Connects [n] and [n'] so that [n.right == n' && n'.left == n]. *)
   let splice n n' =
@@ -291,12 +310,11 @@ module Make (Ord : KeyOrderType) = struct
      INSERT
      ------------------------------------------------------------
   *)
-  and fibheap_insert heap data key =
+  and fibheap_insert heap new_fibnode =
     (* Given a fibdata_node insert it appropriately into the heap.
 
        This function will set the {!min} to the appropriate value; also {!n}
        gets bumped up by one. *)
-    let insert_node heap new_fibnode =
       root_list_add heap new_fibnode;
 
       (* There will be a min due to the root_list_add above.
@@ -308,11 +326,12 @@ module Make (Ord : KeyOrderType) = struct
         heap.min <- Some new_fibnode);
 
       heap.n <- heap.n + 1
-    in
 
-    let new_node = create_fibnode data key in
-      insert_node heap new_node;
+  and fibheap_insert_data heap data key =
+    let new_node = fibnode_new ~data:data ~key:key in
+      fibheap_insert heap new_node;
       new_node
+
 
   (**
      ------------------------------------------------------------
@@ -333,7 +352,10 @@ module Make (Ord : KeyOrderType) = struct
            consolidate heap);
 
         heap.n <- heap.n - 1;
-        min_fibnode.data
+        min_fibnode
+
+  and fibheap_extract_min_data heap =
+    (fibheap_extract_min heap).data
 
   (**
     ------------------------------------------------------------
@@ -341,10 +363,10 @@ module Make (Ord : KeyOrderType) = struct
     ------------------------------------------------------------
   *)
   and fibheap_decrease_key heap node new_key =
-    if new_key >* node.key then
-      raise Key_too_big;
+    if new_key >* node.key then raise Key_too_big;
 
     node.key <- new_key;
+    (* If the parent has a higher key than the new key, pull up the new key. *)
     (match node.parent with
     | Some y ->
         if node.key <* y.key then
@@ -403,10 +425,10 @@ module Make (Ord : KeyOrderType) = struct
   (* Specific Utilities *)
 
   and fibheap_cut heap x y =
-    remove x;
-    y.degree <- y.degree - 1;
-    root_list_add heap x;
+    assert (Option.get x.parent == y);
+    remove_child x;
     x.parent <- None;
+    root_list_add heap x;
     x.mark <- false;
 
   and fibheap_cascading_cut heap y =
@@ -418,6 +440,35 @@ module Make (Ord : KeyOrderType) = struct
           (fibheap_cut heap y z;
            fibheap_cascading_cut heap z)
     | None -> ()
+
+  (** [remove_child x] removes child [x] from its parent, fixing up the child
+      pointer of the parent to the proper value.
+
+      Preconditions:
+      - x must have a parent
+
+      Postconditions:
+      - x will be alone
+      - parent's children will be exactly as before, save without x
+      - degree of parent decremented
+  *)
+  and remove_child x =
+    (* Before calling [remove x], we have to make sure the parent's child list
+       doesn't start with [x]. Once we select a new head for that list, we can safely
+       remove x. *)
+    let p = Option.get x.parent in
+      if is_alone x then
+        p.child <- None
+      else
+        (match p.child with
+        | Some x' ->
+            (* if x is the "head" of the child list of its parent p, pick a new
+               head. *)
+            if x == x' then p.child <- Some x.right
+        | None -> raise InternalError);
+      p.degree <- p.degree - 1;
+      remove x;
+
 
   (** Add [new_fibnode] to the root list of [heap], doing the right there if
       there are no nodes in the root list. *)
@@ -457,28 +508,29 @@ module Make (Ord : KeyOrderType) = struct
 
   and max_degree heap =
     let log2 x = log x /. log 2. in
+    let logphi x = log x /. log ((1. +. sqrt 5.) /. 2.) in
       match heap.n with
         (* This is an InternalError because we shouldn't call this function
            unless heap.n > 0. *)
       | 0 -> raise InternalError
-      | n -> int_of_float (log2 (float_of_int n))
+      | n -> int_of_float (logphi (float_of_int n))
 
-  (** Make [new_child] a new child of [parent], and adjust [parent.degree] and
-      [new_child.mark] accordingly. *)
+  (** Remove [new_child] from its list, make [new_child] a new child of
+      [parent], and adjust [parent.degree] and [new_child.mark] accordingly. *)
   and link ~child:new_child ~parent:parent =
     remove new_child;
     add_child ~parent:parent ~child:new_child;
-    parent.degree <- parent.degree + 1;
     new_child.mark <- false;
 
   (** Make [new_child] a child of [parent]; and set the parent pointer of
-      [new_child] to [parent]. Does *not* modify any degrees of [parent] or
-      [new_child]. Evaluates to the [parent] with [new_child] added. *)
+      [new_child] to [parent]. Increments the parent's degree. Evaluates to the
+      [parent] with [new_child] added. *)
   and add_child ~parent:parent ~child:new_child =
     (match parent.child with
     | None -> parent.child <- Some new_child
     | Some child_list -> splice new_child child_list);
-    new_child.parent <- Some parent
+    new_child.parent <- Some parent;
+    parent.degree <- parent.degree + 1;
 
 
   (** Consolidation works in two steps. *)
@@ -533,7 +585,7 @@ module Make (Ord : KeyOrderType) = struct
               heap.min <- Some fibnodei)
         a;
 
-
+(*
   and print_consolidate_array a =
 
       (* Print array a. *)
@@ -556,5 +608,5 @@ module Make (Ord : KeyOrderType) = struct
       pp_close_box err_formatter ();
       pp_print_flush err_formatter ();
       flush stderr;
-
+*)
 end;;

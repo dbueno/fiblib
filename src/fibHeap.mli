@@ -1,12 +1,16 @@
 (** This module provides an efficient, imperative implementation of Fibonacci
-    heaps. [CLRS 2nd ed. ch. 20]
+    heaps based on the pseudocode from CLRS, 2nd ed., ch. 20.
 
-    Each heap is conceptually a min-heap (elements are higher whose keys are
-    less than other keys). However, the comparison function is parameterised by
-    functor instantiation, so it is just as easy to create a min-heap as a
-    max-heap.
+    {3 Fiblib }
 
-    This library is released under a BSD-style license. See LICENSE.
+    In this library, each heap is conceptually a min-heap (elements are closer
+    to the root whose keys are less than other keys). However, the comparison
+    function is parameterised by functorisation, so it is just as easy to create a
+    min-heap as a max-heap.
+
+    In particular, if your keys are integers, and the comparison function is
+    {!Pervasives.compare}, you will get a min-heap, e.g., data with key 5 will come
+    out of the heap before data with key 10.
 *)
 
 
@@ -34,29 +38,41 @@ module type S = sig
 
   (** {3 Exceptions } *)
 
-  (** Thrown when the heap is empty. *)
-  exception Empty;;
 
-  exception Key_too_big
-    (** Thrown when the new key given for a call to {!fibheap_decrease_key}
-        would not result in a decreased key. *)
+  exception Empty;;
+  (** Thrown when the heap is empty. *)
+
+  exception Key_too_big;;
+  (** Thrown when the new key given for a call to {!fibheap_decrease_key}
+      would not result in a decreased key. *)
 
   (** {3 Operations } *)
 
   val fibheap_create : unit -> 'a fibheap
-    (** Create a fibonacci heap. *)
+    (** Create a fibonacci heap.
 
-  val fibheap_insert : 'a fibheap -> 'a -> key -> 'a fibnode
-    (** [fibheap_insert heap data key] inserts [data] into [heap], and
-        associates it with key [key]. The node created by the insert operation is
-        returned. *)
+        @return a fresh heap *)
 
-  val fibheap_size : 'a fibheap -> int
-    (** @return the number of elements in the heap. *)
+  val fibheap_insert : 'a fibheap -> 'a fibnode -> unit
+    (** [fibheap_insert heap node] inserts [node] into [heap]. *)
 
-  val fibheap_extract_min : 'a fibheap -> 'a
-    (** [fibheap_extract_min heap] extracts the item with the minimum key from
-        [heap]. *)
+  val fibheap_insert_data : 'a fibheap -> 'a -> key -> 'a fibnode
+    (** [fibheap_insert_data heap data key] implicitly creates a {!fibnode} and
+        inserts it into the heap.
+
+        @return the created {!fibnode} *)
+
+  val fibheap_extract_min : 'a fibheap -> 'a fibnode
+    (** [fibheap_extract_min heap] extracts the node with the minimum key from
+        [heap].
+
+        @return the {!fibnode} whose {!key} is minimum in [heap] *)
+
+  val fibheap_extract_min_data : 'a fibheap -> 'a
+    (** [fibheap_extract_min heap] extracts the node with the minimum key from
+        [heap].
+
+        @return the data whose {!key} is minimum in [heap] *)
 
   val fibheap_decrease_key : 'a fibheap -> 'a fibnode -> key -> unit
     (** [fibheap_decrease_key heap node new_key] decreases the value of the key
@@ -65,9 +81,16 @@ module type S = sig
         @raise Not_found if [node] is not in the heap
         @raise Key_too_big if [node]'s key is smaller than [new_key] *)
 
+  val fibheap_size : 'a fibheap -> int
+    (** [fibheap_size heap].
 
-  (** {3 Accessors } *)
+        @return the number of elements in [heap]. *)
 
+
+  (** {3 Constructors and Accessors } *)
+
+  val fibnode_new : key:key -> data:'a -> 'a fibnode
+    (** Create a {!fibnode} by pairing a key with some data. *)
 
   val fibnode_data : 'a fibnode -> 'a
 
@@ -76,14 +99,19 @@ module type S = sig
   (** {3 Printing } *)
 
   val fibheap_print : ('a -> string) -> Format.formatter -> 'a fibheap -> unit
+    (** [fibheap_print to_string formatter heap] pretty-prints the heap to
+        [formatter] using [to_string] to print each data element. *)
 
 end
 
-(** The type of key comparators. *)
+(** The type of key comparators.
+
+    You need to define:
+
+    - [t], the type of your keys; and
+    - [compare : t -> t -> int], an ordering for your keys. See {!S.key} for ordering details. *)
 module type KeyOrderType = sig
   include Map.OrderedType (* declares type t *)
-
-  val to_string : t -> string
 end
 
 (** Creates a Fibonacci heap module with key comparison done by [Ord]. *)
