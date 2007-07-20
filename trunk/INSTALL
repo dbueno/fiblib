@@ -1,0 +1,16 @@
+-*- mode: outline -*-
+
+
+* To make distribution
+
+    cd src
+    make
+
+This will create fiblib.cma and fiblib.cmxa.
+
+* To make documentation
+** HTML
+    make htdoc
+
+which will generate the doc/ directory (a sibling of src/).
+
