@@ -1,5 +1,7 @@
 #summary Some unit-testing ideas.
 
+There aren't many, yet.  I'd like some input.
+
 = Unit Test Ideas =
 
 == decrease-key ==
