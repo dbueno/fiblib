@@ -7,5 +7,7 @@ Fiblib is an efficient, imperative Fibonacci heap library, based on the pseudoco
 
 Please, enter an issue here if you find any problems with the code!  I'd like to know if this heap is being used, or if it's useless.
 
+Testing a priority queue can be a challenge.  The UnitTesting page contains some ideas.
+
 == Dependencies ==
 Fiblib currently depends on [http://www.xs4all.nl/~mmzeeman/ocaml/ OUnit], but only if you want to build and run the unit tests.
