@@ -1,6 +1,6 @@
 #summary Some unit-testing ideas.
 
-There aren't many, yet.  I'd like some input.
+There aren't many, yet.  I'd like some input.  Please leave a comment.
 
 = Unit Test Ideas =
 
