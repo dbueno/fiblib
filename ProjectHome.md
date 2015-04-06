@@ -1,0 +1,1 @@
+An efficient, imperative Fibonacci heap library, based on the pseudocode of Cormen, Leiserson, Rivest, and Stein.
